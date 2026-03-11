@@ -173,6 +173,23 @@ function findMatchingProducts(query: string, alreadyRevealed: string[], count: n
   return scored.slice(0, count).map(s => s.product.id);
 }
 
+// Research questions to weave into product-specific responses
+function getResearchQuestion(query: string, demoState: DemoState, turnIndex: number): string | null {
+  if (turnIndex % 2 !== 0) return null; // Don't ask every time
+  if (demoState === "new") {
+    const questions = [
+      "**Quick question: do you prefer trying products in-store first, or are you comfortable buying online?**",
+      "**Would a virtual try-on feature help you feel more confident choosing shades online?**",
+      "**How important is getting your order quickly vs. free shipping for you?**",
+    ];
+    return questions[turnIndex % questions.length];
+  }
+  if (demoState === "returning") {
+    return "**Would you be interested in a loyalty/subscription program for your favorites?**";
+  }
+  return "**What would help you feel more confident about this purchase?** Reviews, samples, or a money-back guarantee?";
+}
+
 // Conversational AI responses per state
 function getAIResponse(message: string, demoState: DemoState, turnIndex: number, revealedProductIds: string[]): { reply: string; revealProducts?: string[] } {
   const lower = message.toLowerCase();
