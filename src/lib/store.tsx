@@ -47,7 +47,7 @@ const GREETINGS: Record<DemoState, ChatMessage> = {
   new: {
     id: "init-new",
     role: "ai",
-    content: "Welcome to Sephora! ✨ I'm your AI Personal Shopper. Are you looking for skincare, makeup, or fragrance today?",
+    content: "Welcome to Luxora! ✨ I'm your AI Personal Shopper. Are you looking for skincare, makeup, or fragrance today?",
     timestamp: new Date(),
   },
   returning: {

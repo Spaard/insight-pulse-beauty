@@ -49,7 +49,7 @@ export default function CustomerApp() {
               <Bot className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h3 className="font-display text-sm font-semibold tracking-wide">Sephora AI Concierge</h3>
+              <h3 className="font-display text-sm font-semibold tracking-wide">Luxora AI Concierge</h3>
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-insight-praise animate-pulse" />
                 <span className="text-xs text-muted-foreground">Online • Powered by ElevenLabs Voice AI</span>

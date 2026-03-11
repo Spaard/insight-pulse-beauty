@@ -13,7 +13,7 @@ export function TopNav() {
     <nav className="h-16 border-b border-border bg-card flex items-center justify-between px-8">
       <div className="flex items-center gap-2">
         <Sparkles className="w-5 h-5 text-gold" />
-        <span className="font-display text-lg font-bold tracking-tight">SEPHORA</span>
+        <span className="font-display text-lg font-bold tracking-tight">LUXORA</span>
         <span className="text-[10px] font-body font-medium uppercase tracking-widest text-muted-foreground ml-1">AI Concierge</span>
       </div>
 
