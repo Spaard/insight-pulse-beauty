@@ -16,6 +16,7 @@ export interface Product {
   price: string;
   image: string;
   tag?: string;
+  keywords: string[];
 }
 
 export type InsightType = "Pain point" | "Praise" | "Suggestion";
@@ -43,14 +44,22 @@ export type DemoState = "new" | "returning" | "abandoned";
 
 // Mock Data
 const ALL_PRODUCTS: Product[] = [
-  { id: "1", name: "Gloss Bomb Universal Lip Luminizer", brand: "Fenty Beauty", price: "$22", image: "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=300&h=300&fit=crop", tag: "Best Seller" },
-  { id: "2", name: "J'adore Eau de Parfum", brand: "Dior", price: "$155", image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=300&h=300&fit=crop", tag: "Trending" },
-  { id: "3", name: "Black Opium Eau de Parfum", brand: "YSL", price: "$142", image: "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?w=300&h=300&fit=crop" },
-  { id: "4", name: "Soft Matte Complete Foundation", brand: "NARS", price: "$42", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&h=300&fit=crop", tag: "Editor's Pick" },
-  { id: "5", name: "Advanced Génifique Eye Cream", brand: "Lancôme", price: "$68", image: "https://images.unsplash.com/photo-1570194065650-d99fb4b38b17?w=300&h=300&fit=crop", tag: "Complement" },
-  { id: "6", name: "Hydra Beauty Micro Sérum", brand: "Chanel", price: "$120", image: "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=300&h=300&fit=crop", tag: "Recommended" },
-  { id: "7", name: "Vitamin C Serum", brand: "La Roche-Posay", price: "$45", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=300&h=300&fit=crop" },
-  { id: "8", name: "SPF 50 UV Protect", brand: "Supergoop!", price: "$36", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=300&h=300&fit=crop", tag: "Essential" },
+  { id: "1", name: "Gloss Bomb Universal Lip Luminizer", brand: "Fenty Beauty", price: "$22", image: "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=300&h=300&fit=crop", tag: "Best Seller", keywords: ["gloss", "lip", "lèvres", "brillant"] },
+  { id: "2", name: "J'adore Eau de Parfum", brand: "Dior", price: "$155", image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=300&h=300&fit=crop", tag: "Trending", keywords: ["perfume", "parfum", "fragrance", "scent", "dior", "j'adore"] },
+  { id: "3", name: "Black Opium Eau de Parfum", brand: "YSL", price: "$142", image: "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?w=300&h=300&fit=crop", keywords: ["perfume", "parfum", "fragrance", "scent", "ysl", "opium"] },
+  { id: "4", name: "Soft Matte Complete Foundation", brand: "NARS", price: "$42", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&h=300&fit=crop", tag: "Editor's Pick", keywords: ["foundation", "fond de teint", "base", "teint", "matte", "nars"] },
+  { id: "5", name: "Advanced Génifique Eye Cream", brand: "Lancôme", price: "$68", image: "https://images.unsplash.com/photo-1570194065650-d99fb4b38b17?w=300&h=300&fit=crop", tag: "Complement", keywords: ["eye", "yeux", "cream", "crème", "contour", "cernes", "lancôme"] },
+  { id: "6", name: "Hydra Beauty Micro Sérum", brand: "Chanel", price: "$120", image: "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=300&h=300&fit=crop", tag: "Recommended", keywords: ["serum", "sérum", "hydra", "hydratant", "moisturizer", "chanel", "skincare", "skin"] },
+  { id: "7", name: "Vitamin C Serum", brand: "La Roche-Posay", price: "$45", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=300&h=300&fit=crop", keywords: ["serum", "sérum", "vitamin", "vitamine", "bright", "éclat", "skincare", "skin"] },
+  { id: "8", name: "SPF 50 UV Protect", brand: "Supergoop!", price: "$36", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=300&h=300&fit=crop", tag: "Essential", keywords: ["spf", "sunscreen", "solaire", "protection", "uv", "sun"] },
+  { id: "9", name: "Precision Lip Liner", brand: "MAC", price: "$23", image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300&h=300&fit=crop", tag: "Classic", keywords: ["liner", "lip liner", "crayon", "lèvres", "contour lèvres", "lip pencil"] },
+  { id: "10", name: "24H Waterproof Eyeliner", brand: "Kat Von D", price: "$24", image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=300&h=300&fit=crop", tag: "Best Seller", keywords: ["eyeliner", "eye liner", "liner yeux", "khol", "kohl", "trait", "waterproof"] },
+  { id: "11", name: "Rouge Dior Satin Lipstick", brand: "Dior", price: "$45", image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300&h=300&fit=crop", tag: "Iconic", keywords: ["lipstick", "rouge à lèvres", "rouge", "red", "satin", "dior"] },
+  { id: "12", name: "Volumizing Mascara Le 8", brand: "Chanel", price: "$38", image: "https://images.unsplash.com/photo-1631214500115-598fc2cb8ada?w=300&h=300&fit=crop", tag: "New", keywords: ["mascara", "cils", "lashes", "volume", "eyes", "chanel"] },
+  { id: "13", name: "5-Color Eyeshadow Palette", brand: "Dior", price: "$65", image: "https://images.unsplash.com/photo-1583241800698-e8ab01830a07?w=300&h=300&fit=crop", keywords: ["eyeshadow", "ombre", "palette", "fard", "paupières", "shadow"] },
+  { id: "14", name: "Touche Éclat Highlighter Pen", brand: "YSL", price: "$42", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&h=300&fit=crop", tag: "Iconic", keywords: ["highlighter", "illuminateur", "highlight", "éclat", "concealer", "anticerne", "touche éclat"] },
+  { id: "15", name: "Setting Powder Airbrush", brand: "Charlotte Tilbury", price: "$49", image: "https://images.unsplash.com/photo-1599733594230-6b823276abcc?w=300&h=300&fit=crop", keywords: ["powder", "poudre", "setting", "fixante", "matifier", "blurring"] },
+  { id: "16", name: "Orgasm Blush", brand: "NARS", price: "$38", image: "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=300&h=300&fit=crop", tag: "Cult Favorite", keywords: ["blush", "joues", "cheeks", "rose", "nars", "orgasm"] },
 ];
 
 const GREETINGS: Record<DemoState, ChatMessage> = {
@@ -131,58 +140,126 @@ function classifyFeedback(message: string, demoState: DemoState): Classification
   return null;
 }
 
+// Smart product matching: find the best product for a user query
+function findMatchingProducts(query: string, alreadyRevealed: string[], count: number = 1): string[] {
+  const lower = query.toLowerCase();
+  const words = lower.split(/\s+/);
+  
+  // Score each product by keyword match relevance
+  const scored = ALL_PRODUCTS
+    .filter(p => !alreadyRevealed.includes(p.id))
+    .map(p => {
+      let score = 0;
+      for (const kw of p.keywords) {
+        // Exact word match in query
+        if (words.includes(kw)) score += 10;
+        // Partial match (query contains keyword)
+        else if (lower.includes(kw)) score += 7;
+        // Keyword contains a query word (e.g. "liner" matches "lip liner")
+        else if (words.some(w => w.length > 2 && kw.includes(w))) score += 5;
+      }
+      // Also match product name
+      const nameLower = p.name.toLowerCase();
+      for (const w of words) {
+        if (w.length > 2 && nameLower.includes(w)) score += 6;
+      }
+      // Match brand
+      if (lower.includes(p.brand.toLowerCase())) score += 8;
+      return { product: p, score };
+    })
+    .filter(s => s.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  return scored.slice(0, count).map(s => s.product.id);
+}
+
+// Research questions to weave into product-specific responses
+function getResearchQuestion(query: string, demoState: DemoState, turnIndex: number): string | null {
+  if (turnIndex % 2 !== 0) return null; // Don't ask every time
+  if (demoState === "new") {
+    const questions = [
+      "**Quick question: do you prefer trying products in-store first, or are you comfortable buying online?**",
+      "**Would a virtual try-on feature help you feel more confident choosing shades online?**",
+      "**How important is getting your order quickly vs. free shipping for you?**",
+    ];
+    return questions[turnIndex % questions.length];
+  }
+  if (demoState === "returning") {
+    return "**Would you be interested in a loyalty/subscription program for your favorites?**";
+  }
+  return "**What would help you feel more confident about this purchase?** Reviews, samples, or a money-back guarantee?";
+}
+
 // Conversational AI responses per state
-function getAIResponse(message: string, demoState: DemoState, turnIndex: number): { reply: string; revealProducts?: string[] } {
+function getAIResponse(message: string, demoState: DemoState, turnIndex: number, revealedProductIds: string[]): { reply: string; revealProducts?: string[] } {
   const lower = message.toLowerCase();
+  
+  // PRIORITY 1: Direct product search — match specific products by keywords
+  const directMatches = findMatchingProducts(message, revealedProductIds, 2);
+  
+  // If user is clearly asking for a specific product type, return the best match
+  const productQueryPatterns = /liner|lipstick|rouge|mascara|foundation|fond de teint|blush|eyeshadow|ombre|palette|powder|poudre|highlighter|concealer|anticerne|eyeliner|gloss|serum|sérum|cream|crème|spf|sunscreen|solaire|perfume|parfum|fragrance/;
+  if (lower.match(productQueryPatterns) && directMatches.length > 0) {
+    const matchedProducts = directMatches;
+    const product = ALL_PRODUCTS.find(p => p.id === matchedProducts[0]);
+    const researchQ = getResearchQuestion(lower, demoState, turnIndex);
+    return {
+      reply: `Great choice! I found the perfect match for you — the **${product?.name}** by ${product?.brand} (${product?.price}). It's one of our top picks! ✨${researchQ ? `\n\n${researchQ}` : ""}`,
+      revealProducts: matchedProducts,
+    };
+  }
 
   if (demoState === "new") {
     if (lower.includes("skincare") || lower.includes("skin")) {
-      return { reply: "Great choice! Skincare is all about finding what works for your unique skin. I'd recommend starting with this — it's one of our most-loved serums right now.\n\nQuick question before we go further: **how important is ingredient transparency to you when choosing skincare?** (Very important / Somewhat / I just want results)", revealProducts: ["7"] };
+      const products = findMatchingProducts("skincare serum", revealedProductIds, 1);
+      return { reply: "Great choice! Skincare is all about finding what works for your unique skin. I'd recommend starting with this — it's one of our most-loved serums right now.\n\nQuick question before we go further: **how important is ingredient transparency to you when choosing skincare?** (Very important / Somewhat / I just want results)", revealProducts: products.length ? products : ["7"] };
     }
-    if (lower.includes("makeup") || lower.includes("foundation") || lower.includes("lipstick")) {
-      return { reply: "Love it! Let me start with something universally flattering — this Fenty Gloss is a fan favorite.\n\n**What's the occasion?** Everyday look, night out, or special event? And out of curiosity — **do you usually shop for beauty online or in-store?**", revealProducts: ["1"] };
+    if (lower.includes("makeup") || lower.includes("maquillage")) {
+      const products = findMatchingProducts("makeup lip gloss", revealedProductIds, 1);
+      return { reply: "Love it! Let me start with something universally flattering — this is a fan favorite.\n\n**What's the occasion?** Everyday look, night out, or special event? And out of curiosity — **do you usually shop for beauty online or in-store?**", revealProducts: products.length ? products : ["1"] };
     }
     if (lower.includes("fragrance") || lower.includes("perfume") || lower.includes("parfum")) {
-      return { reply: "Fragrance is so personal — I love helping with that. Here's a timeless option to start.\n\nDo you tend to prefer fresh & light, or warm & intense scents? Also — **would you be interested in a sample/discovery set before committing to a full bottle?**", revealProducts: ["2"] };
+      const products = findMatchingProducts("perfume fragrance", revealedProductIds, 1);
+      return { reply: "Fragrance is so personal — I love helping with that. Here's a timeless option to start.\n\nDo you tend to prefer fresh & light, or warm & intense scents? Also — **would you be interested in a sample/discovery set before committing to a full bottle?**", revealProducts: products.length ? products : ["2"] };
     }
     if (lower.match(/important|très|very|results|résultat|just want/)) {
-      return { reply: "Got it, that's super helpful! Here's another option that's all about visible results — clinical-grade but still luxurious.\n\n**One more thing: does delivery speed matter a lot to you, or are you okay waiting a few extra days if it means free shipping?**", revealProducts: ["6"] };
+      return { reply: "Got it, that's super helpful! Here's another option that's all about visible results — clinical-grade but still luxurious.\n\n**One more thing: does delivery speed matter a lot to you, or are you okay waiting a few extra days if it means free shipping?**", revealProducts: findMatchingProducts("serum skincare", revealedProductIds, 1) };
     }
     if (lower.match(/online|en ligne|internet/)) {
-      return { reply: "Interesting! Since you shop online, **what would make you more confident buying beauty products without testing them first?** Virtual try-on, detailed swatches, reviews, or generous return policies? Here's another pick for you 💄", revealProducts: ["4"] };
+      return { reply: "Interesting! Since you shop online, **what would make you more confident buying beauty products without testing them first?** Virtual try-on, detailed swatches, reviews, or generous return policies? Here's another pick for you 💄", revealProducts: findMatchingProducts("foundation makeup", revealedProductIds, 1) };
     }
     if (lower.match(/store|magasin|boutique|in-store/)) {
-      return { reply: "Makes sense — nothing beats trying in person! **What would convince you to buy more online?** Better product videos, AR try-on, or maybe free samples with every order? In the meantime, check this out:", revealProducts: ["4"] };
+      return { reply: "Makes sense — nothing beats trying in person! **What would convince you to buy more online?** Better product videos, AR try-on, or maybe free samples with every order? In the meantime, check this out:", revealProducts: findMatchingProducts("foundation makeup", revealedProductIds, 1) };
     }
     if (lower.match(/sample|échantillon|discovery|découverte/)) {
-      return { reply: "Love that idea! We're actually exploring discovery sets. **How much would you be willing to pay for a curated sample box of 5 products?** Under $20, $20-40, or $40+? Here's something else you might like:", revealProducts: ["8"] };
+      return { reply: "Love that idea! We're actually exploring discovery sets. **How much would you be willing to pay for a curated sample box of 5 products?** Under $20, $20-40, or $40+? Here's something else you might like:", revealProducts: findMatchingProducts("spf sunscreen", revealedProductIds, 1) };
     }
     if (turnIndex >= 2) {
-      return { reply: "Based on what you've shared, I think you'd also love this. **Last question — would you like to receive personalized product recommendations by email, or do you prefer to discover on your own?**", revealProducts: ["4"] };
+      return { reply: "Based on what you've shared, I think you'd also love this. **Last question — would you like to receive personalized product recommendations by email, or do you prefer to discover on your own?**", revealProducts: findMatchingProducts("blush highlighter", revealedProductIds, 1) };
     }
     return { reply: "I'd love to help! Are you leaning towards skincare, makeup, or fragrance? Or I can suggest something based on what's trending right now 🔥" };
   }
 
   if (demoState === "returning") {
     if (lower.match(/shipping|delivery|slow|week|livraison|délai|long/)) {
-      return { reply: "I'm really sorry to hear that, Sarah. Two weeks is way too long — you deserve better. I've flagged this with our logistics team.\n\n**Quick question: would you pay a small premium ($5-8) for guaranteed 2-day delivery, or is free shipping more important even if it takes longer?**\n\nIn the meantime, I think your skin would love this eye cream as a complement to your serum 💫", revealProducts: ["5"] };
+      return { reply: "I'm really sorry to hear that, Sarah. Two weeks is way too long — you deserve better. I've flagged this with our logistics team.\n\n**Quick question: would you pay a small premium ($5-8) for guaranteed 2-day delivery, or is free shipping more important even if it takes longer?**\n\nIn the meantime, I think your skin would love this as a complement to your serum 💫", revealProducts: findMatchingProducts("eye cream", revealedProductIds, 1) };
     }
     if (lower.match(/great|love|amazing|good|super|bien|adore/)) {
-      return { reply: "That's wonderful to hear! 🎉 Since your skin is responding so well, I think you'd absolutely adore this — it uses the same microbiome science for the delicate eye area.\n\n**Would you be interested in a subscription/auto-replenish option so you never run out of your favorites?** We're thinking about offering 10% off for subscribers.", revealProducts: ["5"] };
+      return { reply: "That's wonderful to hear! 🎉 Since your skin is responding so well, I think you'd absolutely adore this.\n\n**Would you be interested in a subscription/auto-replenish option so you never run out of your favorites?** We're thinking about offering 10% off for subscribers.", revealProducts: findMatchingProducts("eye cream skincare", revealedProductIds, 1) };
     }
     if (lower.match(/damaged|broken|abîmé|cassé|packaging|crushed|cracked/)) {
-      return { reply: "Oh no, I'm so sorry about that! Product arriving damaged is unacceptable. I'm immediately processing a free replacement for you.\n\n**How important is eco-friendly packaging to you vs. maximum protection?** We're exploring sustainable options but want to make sure products arrive safely. Your input really helps! 💛", revealProducts: ["6"] };
+      return { reply: "Oh no, I'm so sorry about that! Product arriving damaged is unacceptable. I'm immediately processing a free replacement for you.\n\n**How important is eco-friendly packaging to you vs. maximum protection?** We're exploring sustainable options but want to make sure products arrive safely. Your input really helps! 💛", revealProducts: findMatchingProducts("serum hydra", revealedProductIds, 1) };
     }
     if (lower.match(/subscription|abonnement|auto|yes|oui|sure|ok/)) {
-      return { reply: "Great feedback! We'll definitely factor that in. **One more thing — when you repurchase, do you like to stick with what works, or do you enjoy discovering new products each time?**\n\nHere's something new that pairs beautifully with your serum:", revealProducts: ["8"] };
+      return { reply: "Great feedback! We'll definitely factor that in. **One more thing — when you repurchase, do you like to stick with what works, or do you enjoy discovering new products each time?**\n\nHere's something new that pairs beautifully with your serum:", revealProducts: findMatchingProducts("spf sunscreen", revealedProductIds, 1) };
     }
     if (lower.match(/pay|premium|fast|rapide|2.day|express/)) {
-      return { reply: "That's really useful to know! **Would you also value real-time delivery tracking with updates, or is just knowing the estimated date enough?**\n\nBy the way, here's a product I think would complement your routine perfectly:", revealProducts: ["6"] };
+      return { reply: "That's really useful to know! **Would you also value real-time delivery tracking with updates, or is just knowing the estimated date enough?**\n\nBy the way, here's a product I think would complement your routine perfectly:", revealProducts: findMatchingProducts("serum vitamin", revealedProductIds, 1) };
     }
     if (lower.match(/eco|green|sustainable|durable|environnement|planet/)) {
-      return { reply: "Love that you care about sustainability! 🌱 **Would you choose a brand specifically because of eco-friendly packaging, even if it costs slightly more?**\n\nHere's a brand that's doing great things on that front:", revealProducts: ["7"] };
+      return { reply: "Love that you care about sustainability! 🌱 **Would you choose a brand specifically because of eco-friendly packaging, even if it costs slightly more?**\n\nHere's a brand that's doing great things on that front:", revealProducts: findMatchingProducts("vitamin serum", revealedProductIds, 1) };
     }
-    return { reply: "Thank you for sharing, Sarah! Your feedback is incredibly valuable.\n\n**Before I make a recommendation — on a scale of 1-5, how satisfied are you overall with your Luxora experience so far?** And is there anything we could do better?\n\nIn the meantime, shall I show you something new?", revealProducts: turnIndex >= 2 ? ["6"] : undefined };
+    return { reply: "Thank you for sharing, Sarah! Your feedback is incredibly valuable.\n\n**Before I make a recommendation — on a scale of 1-5, how satisfied are you overall with your Luxora experience so far?** And is there anything we could do better?\n\nIn the meantime, shall I show you something new?", revealProducts: turnIndex >= 2 ? findMatchingProducts("serum skincare", revealedProductIds, 1) : undefined };
   }
 
   // abandoned
@@ -371,7 +448,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTurnIndex(prev => prev + 1);
 
     setTimeout(() => {
-      const { reply, revealProducts } = getAIResponse(content, demoState, currentTurn);
+      const { reply, revealProducts } = getAIResponse(content, demoState, currentTurn, revealedProductIds);
       const aiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         role: "ai",
