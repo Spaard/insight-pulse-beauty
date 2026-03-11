@@ -44,14 +44,22 @@ export type DemoState = "new" | "returning" | "abandoned";
 
 // Mock Data
 const ALL_PRODUCTS: Product[] = [
-  { id: "1", name: "Gloss Bomb Universal Lip Luminizer", brand: "Fenty Beauty", price: "$22", image: "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=300&h=300&fit=crop", tag: "Best Seller" },
-  { id: "2", name: "J'adore Eau de Parfum", brand: "Dior", price: "$155", image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=300&h=300&fit=crop", tag: "Trending" },
-  { id: "3", name: "Black Opium Eau de Parfum", brand: "YSL", price: "$142", image: "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?w=300&h=300&fit=crop" },
-  { id: "4", name: "Soft Matte Complete Foundation", brand: "NARS", price: "$42", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&h=300&fit=crop", tag: "Editor's Pick" },
-  { id: "5", name: "Advanced Génifique Eye Cream", brand: "Lancôme", price: "$68", image: "https://images.unsplash.com/photo-1570194065650-d99fb4b38b17?w=300&h=300&fit=crop", tag: "Complement" },
-  { id: "6", name: "Hydra Beauty Micro Sérum", brand: "Chanel", price: "$120", image: "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=300&h=300&fit=crop", tag: "Recommended" },
-  { id: "7", name: "Vitamin C Serum", brand: "La Roche-Posay", price: "$45", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=300&h=300&fit=crop" },
-  { id: "8", name: "SPF 50 UV Protect", brand: "Supergoop!", price: "$36", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=300&h=300&fit=crop", tag: "Essential" },
+  { id: "1", name: "Gloss Bomb Universal Lip Luminizer", brand: "Fenty Beauty", price: "$22", image: "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=300&h=300&fit=crop", tag: "Best Seller", keywords: ["gloss", "lip", "lèvres", "brillant"] },
+  { id: "2", name: "J'adore Eau de Parfum", brand: "Dior", price: "$155", image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=300&h=300&fit=crop", tag: "Trending", keywords: ["perfume", "parfum", "fragrance", "scent", "dior", "j'adore"] },
+  { id: "3", name: "Black Opium Eau de Parfum", brand: "YSL", price: "$142", image: "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?w=300&h=300&fit=crop", keywords: ["perfume", "parfum", "fragrance", "scent", "ysl", "opium"] },
+  { id: "4", name: "Soft Matte Complete Foundation", brand: "NARS", price: "$42", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&h=300&fit=crop", tag: "Editor's Pick", keywords: ["foundation", "fond de teint", "base", "teint", "matte", "nars"] },
+  { id: "5", name: "Advanced Génifique Eye Cream", brand: "Lancôme", price: "$68", image: "https://images.unsplash.com/photo-1570194065650-d99fb4b38b17?w=300&h=300&fit=crop", tag: "Complement", keywords: ["eye", "yeux", "cream", "crème", "contour", "cernes", "lancôme"] },
+  { id: "6", name: "Hydra Beauty Micro Sérum", brand: "Chanel", price: "$120", image: "https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=300&h=300&fit=crop", tag: "Recommended", keywords: ["serum", "sérum", "hydra", "hydratant", "moisturizer", "chanel", "skincare", "skin"] },
+  { id: "7", name: "Vitamin C Serum", brand: "La Roche-Posay", price: "$45", image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=300&h=300&fit=crop", keywords: ["serum", "sérum", "vitamin", "vitamine", "bright", "éclat", "skincare", "skin"] },
+  { id: "8", name: "SPF 50 UV Protect", brand: "Supergoop!", price: "$36", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=300&h=300&fit=crop", tag: "Essential", keywords: ["spf", "sunscreen", "solaire", "protection", "uv", "sun"] },
+  { id: "9", name: "Precision Lip Liner", brand: "MAC", price: "$23", image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300&h=300&fit=crop", tag: "Classic", keywords: ["liner", "lip liner", "crayon", "lèvres", "contour lèvres", "lip pencil"] },
+  { id: "10", name: "24H Waterproof Eyeliner", brand: "Kat Von D", price: "$24", image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=300&h=300&fit=crop", tag: "Best Seller", keywords: ["eyeliner", "eye liner", "liner yeux", "khol", "kohl", "trait", "waterproof"] },
+  { id: "11", name: "Rouge Dior Satin Lipstick", brand: "Dior", price: "$45", image: "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=300&h=300&fit=crop", tag: "Iconic", keywords: ["lipstick", "rouge à lèvres", "rouge", "red", "satin", "dior"] },
+  { id: "12", name: "Volumizing Mascara Le 8", brand: "Chanel", price: "$38", image: "https://images.unsplash.com/photo-1631214500115-598fc2cb8ada?w=300&h=300&fit=crop", tag: "New", keywords: ["mascara", "cils", "lashes", "volume", "eyes", "chanel"] },
+  { id: "13", name: "5-Color Eyeshadow Palette", brand: "Dior", price: "$65", image: "https://images.unsplash.com/photo-1583241800698-e8ab01830a07?w=300&h=300&fit=crop", keywords: ["eyeshadow", "ombre", "palette", "fard", "paupières", "shadow"] },
+  { id: "14", name: "Touche Éclat Highlighter Pen", brand: "YSL", price: "$42", image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=300&h=300&fit=crop", tag: "Iconic", keywords: ["highlighter", "illuminateur", "highlight", "éclat", "concealer", "anticerne", "touche éclat"] },
+  { id: "15", name: "Setting Powder Airbrush", brand: "Charlotte Tilbury", price: "$49", image: "https://images.unsplash.com/photo-1599733594230-6b823276abcc?w=300&h=300&fit=crop", keywords: ["powder", "poudre", "setting", "fixante", "matifier", "blurring"] },
+  { id: "16", name: "Orgasm Blush", brand: "NARS", price: "$38", image: "https://images.unsplash.com/photo-1631214524020-7e18db9a8f92?w=300&h=300&fit=crop", tag: "Cult Favorite", keywords: ["blush", "joues", "cheeks", "rose", "nars", "orgasm"] },
 ];
 
 const GREETINGS: Record<DemoState, ChatMessage> = {
