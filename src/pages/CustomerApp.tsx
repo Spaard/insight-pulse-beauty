@@ -119,7 +119,7 @@ export default function CustomerApp() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder={demoState === "returning" ? "Tell Sarah's AI about your experience..." : "Ask me anything about beauty..."}
+              placeholder={demoState === "returning" ? "Share your experience — product, delivery, anything..." : demoState === "abandoned" ? "Tell me what happened last time..." : "Ask me anything about beauty..."}
               className="flex-1 h-10 px-4 rounded-full border border-border bg-secondary text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 transition-all"
             />
             <button
