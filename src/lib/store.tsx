@@ -176,55 +176,73 @@ function findMatchingProducts(query: string, alreadyRevealed: string[], count: n
 // Conversational AI responses per state
 function getAIResponse(message: string, demoState: DemoState, turnIndex: number, revealedProductIds: string[]): { reply: string; revealProducts?: string[] } {
   const lower = message.toLowerCase();
+  
+  // PRIORITY 1: Direct product search — match specific products by keywords
+  const directMatches = findMatchingProducts(message, revealedProductIds, 2);
+  
+  // If user is clearly asking for a specific product type, return the best match
+  const productQueryPatterns = /liner|lipstick|rouge|mascara|foundation|fond de teint|blush|eyeshadow|ombre|palette|powder|poudre|highlighter|concealer|anticerne|eyeliner|gloss|serum|sérum|cream|crème|spf|sunscreen|solaire|perfume|parfum|fragrance/;
+  if (lower.match(productQueryPatterns) && directMatches.length > 0) {
+    const matchedProducts = directMatches;
+    const product = ALL_PRODUCTS.find(p => p.id === matchedProducts[0]);
+    const researchQ = getResearchQuestion(lower, demoState, turnIndex);
+    return {
+      reply: `Great choice! I found the perfect match for you — the **${product?.name}** by ${product?.brand} (${product?.price}). It's one of our top picks! ✨${researchQ ? `\n\n${researchQ}` : ""}`,
+      revealProducts: matchedProducts,
+    };
+  }
 
   if (demoState === "new") {
     if (lower.includes("skincare") || lower.includes("skin")) {
-      return { reply: "Great choice! Skincare is all about finding what works for your unique skin. I'd recommend starting with this — it's one of our most-loved serums right now.\n\nQuick question before we go further: **how important is ingredient transparency to you when choosing skincare?** (Very important / Somewhat / I just want results)", revealProducts: ["7"] };
+      const products = findMatchingProducts("skincare serum", revealedProductIds, 1);
+      return { reply: "Great choice! Skincare is all about finding what works for your unique skin. I'd recommend starting with this — it's one of our most-loved serums right now.\n\nQuick question before we go further: **how important is ingredient transparency to you when choosing skincare?** (Very important / Somewhat / I just want results)", revealProducts: products.length ? products : ["7"] };
     }
-    if (lower.includes("makeup") || lower.includes("foundation") || lower.includes("lipstick")) {
-      return { reply: "Love it! Let me start with something universally flattering — this Fenty Gloss is a fan favorite.\n\n**What's the occasion?** Everyday look, night out, or special event? And out of curiosity — **do you usually shop for beauty online or in-store?**", revealProducts: ["1"] };
+    if (lower.includes("makeup") || lower.includes("maquillage")) {
+      const products = findMatchingProducts("makeup lip gloss", revealedProductIds, 1);
+      return { reply: "Love it! Let me start with something universally flattering — this is a fan favorite.\n\n**What's the occasion?** Everyday look, night out, or special event? And out of curiosity — **do you usually shop for beauty online or in-store?**", revealProducts: products.length ? products : ["1"] };
     }
     if (lower.includes("fragrance") || lower.includes("perfume") || lower.includes("parfum")) {
-      return { reply: "Fragrance is so personal — I love helping with that. Here's a timeless option to start.\n\nDo you tend to prefer fresh & light, or warm & intense scents? Also — **would you be interested in a sample/discovery set before committing to a full bottle?**", revealProducts: ["2"] };
+      const products = findMatchingProducts("perfume fragrance", revealedProductIds, 1);
+      return { reply: "Fragrance is so personal — I love helping with that. Here's a timeless option to start.\n\nDo you tend to prefer fresh & light, or warm & intense scents? Also — **would you be interested in a sample/discovery set before committing to a full bottle?**", revealProducts: products.length ? products : ["2"] };
     }
     if (lower.match(/important|très|very|results|résultat|just want/)) {
-      return { reply: "Got it, that's super helpful! Here's another option that's all about visible results — clinical-grade but still luxurious.\n\n**One more thing: does delivery speed matter a lot to you, or are you okay waiting a few extra days if it means free shipping?**", revealProducts: ["6"] };
+      return { reply: "Got it, that's super helpful! Here's another option that's all about visible results — clinical-grade but still luxurious.\n\n**One more thing: does delivery speed matter a lot to you, or are you okay waiting a few extra days if it means free shipping?**", revealProducts: findMatchingProducts("serum skincare", revealedProductIds, 1) };
     }
     if (lower.match(/online|en ligne|internet/)) {
-      return { reply: "Interesting! Since you shop online, **what would make you more confident buying beauty products without testing them first?** Virtual try-on, detailed swatches, reviews, or generous return policies? Here's another pick for you 💄", revealProducts: ["4"] };
+      return { reply: "Interesting! Since you shop online, **what would make you more confident buying beauty products without testing them first?** Virtual try-on, detailed swatches, reviews, or generous return policies? Here's another pick for you 💄", revealProducts: findMatchingProducts("foundation makeup", revealedProductIds, 1) };
     }
     if (lower.match(/store|magasin|boutique|in-store/)) {
-      return { reply: "Makes sense — nothing beats trying in person! **What would convince you to buy more online?** Better product videos, AR try-on, or maybe free samples with every order? In the meantime, check this out:", revealProducts: ["4"] };
+      return { reply: "Makes sense — nothing beats trying in person! **What would convince you to buy more online?** Better product videos, AR try-on, or maybe free samples with every order? In the meantime, check this out:", revealProducts: findMatchingProducts("foundation makeup", revealedProductIds, 1) };
     }
     if (lower.match(/sample|échantillon|discovery|découverte/)) {
-      return { reply: "Love that idea! We're actually exploring discovery sets. **How much would you be willing to pay for a curated sample box of 5 products?** Under $20, $20-40, or $40+? Here's something else you might like:", revealProducts: ["8"] };
+      return { reply: "Love that idea! We're actually exploring discovery sets. **How much would you be willing to pay for a curated sample box of 5 products?** Under $20, $20-40, or $40+? Here's something else you might like:", revealProducts: findMatchingProducts("spf sunscreen", revealedProductIds, 1) };
     }
     if (turnIndex >= 2) {
-      return { reply: "Based on what you've shared, I think you'd also love this. **Last question — would you like to receive personalized product recommendations by email, or do you prefer to discover on your own?**", revealProducts: ["4"] };
+      return { reply: "Based on what you've shared, I think you'd also love this. **Last question — would you like to receive personalized product recommendations by email, or do you prefer to discover on your own?**", revealProducts: findMatchingProducts("blush highlighter", revealedProductIds, 1) };
     }
     return { reply: "I'd love to help! Are you leaning towards skincare, makeup, or fragrance? Or I can suggest something based on what's trending right now 🔥" };
   }
 
   if (demoState === "returning") {
     if (lower.match(/shipping|delivery|slow|week|livraison|délai|long/)) {
-      return { reply: "I'm really sorry to hear that, Sarah. Two weeks is way too long — you deserve better. I've flagged this with our logistics team.\n\n**Quick question: would you pay a small premium ($5-8) for guaranteed 2-day delivery, or is free shipping more important even if it takes longer?**\n\nIn the meantime, I think your skin would love this eye cream as a complement to your serum 💫", revealProducts: ["5"] };
+      return { reply: "I'm really sorry to hear that, Sarah. Two weeks is way too long — you deserve better. I've flagged this with our logistics team.\n\n**Quick question: would you pay a small premium ($5-8) for guaranteed 2-day delivery, or is free shipping more important even if it takes longer?**\n\nIn the meantime, I think your skin would love this as a complement to your serum 💫", revealProducts: findMatchingProducts("eye cream", revealedProductIds, 1) };
     }
     if (lower.match(/great|love|amazing|good|super|bien|adore/)) {
-      return { reply: "That's wonderful to hear! 🎉 Since your skin is responding so well, I think you'd absolutely adore this — it uses the same microbiome science for the delicate eye area.\n\n**Would you be interested in a subscription/auto-replenish option so you never run out of your favorites?** We're thinking about offering 10% off for subscribers.", revealProducts: ["5"] };
+      return { reply: "That's wonderful to hear! 🎉 Since your skin is responding so well, I think you'd absolutely adore this.\n\n**Would you be interested in a subscription/auto-replenish option so you never run out of your favorites?** We're thinking about offering 10% off for subscribers.", revealProducts: findMatchingProducts("eye cream skincare", revealedProductIds, 1) };
     }
     if (lower.match(/damaged|broken|abîmé|cassé|packaging|crushed|cracked/)) {
-      return { reply: "Oh no, I'm so sorry about that! Product arriving damaged is unacceptable. I'm immediately processing a free replacement for you.\n\n**How important is eco-friendly packaging to you vs. maximum protection?** We're exploring sustainable options but want to make sure products arrive safely. Your input really helps! 💛", revealProducts: ["6"] };
+      return { reply: "Oh no, I'm so sorry about that! Product arriving damaged is unacceptable. I'm immediately processing a free replacement for you.\n\n**How important is eco-friendly packaging to you vs. maximum protection?** We're exploring sustainable options but want to make sure products arrive safely. Your input really helps! 💛", revealProducts: findMatchingProducts("serum hydra", revealedProductIds, 1) };
     }
     if (lower.match(/subscription|abonnement|auto|yes|oui|sure|ok/)) {
-      return { reply: "Great feedback! We'll definitely factor that in. **One more thing — when you repurchase, do you like to stick with what works, or do you enjoy discovering new products each time?**\n\nHere's something new that pairs beautifully with your serum:", revealProducts: ["8"] };
+      return { reply: "Great feedback! We'll definitely factor that in. **One more thing — when you repurchase, do you like to stick with what works, or do you enjoy discovering new products each time?**\n\nHere's something new that pairs beautifully with your serum:", revealProducts: findMatchingProducts("spf sunscreen", revealedProductIds, 1) };
     }
     if (lower.match(/pay|premium|fast|rapide|2.day|express/)) {
-      return { reply: "That's really useful to know! **Would you also value real-time delivery tracking with updates, or is just knowing the estimated date enough?**\n\nBy the way, here's a product I think would complement your routine perfectly:", revealProducts: ["6"] };
+      return { reply: "That's really useful to know! **Would you also value real-time delivery tracking with updates, or is just knowing the estimated date enough?**\n\nBy the way, here's a product I think would complement your routine perfectly:", revealProducts: findMatchingProducts("serum vitamin", revealedProductIds, 1) };
     }
     if (lower.match(/eco|green|sustainable|durable|environnement|planet/)) {
-      return { reply: "Love that you care about sustainability! 🌱 **Would you choose a brand specifically because of eco-friendly packaging, even if it costs slightly more?**\n\nHere's a brand that's doing great things on that front:", revealProducts: ["7"] };
+      return { reply: "Love that you care about sustainability! 🌱 **Would you choose a brand specifically because of eco-friendly packaging, even if it costs slightly more?**\n\nHere's a brand that's doing great things on that front:", revealProducts: findMatchingProducts("vitamin serum", revealedProductIds, 1) };
     }
-    return { reply: "Thank you for sharing, Sarah! Your feedback is incredibly valuable.\n\n**Before I make a recommendation — on a scale of 1-5, how satisfied are you overall with your Luxora experience so far?** And is there anything we could do better?\n\nIn the meantime, shall I show you something new?", revealProducts: turnIndex >= 2 ? ["6"] : undefined };
+    return { reply: "Thank you for sharing, Sarah! Your feedback is incredibly valuable.\n\n**Before I make a recommendation — on a scale of 1-5, how satisfied are you overall with your Luxora experience so far?** And is there anything we could do better?\n\nIn the meantime, shall I show you something new?", revealProducts: turnIndex >= 2 ? findMatchingProducts("serum skincare", revealedProductIds, 1) : undefined };
   }
 
   // abandoned
