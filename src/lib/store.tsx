@@ -16,6 +16,7 @@ export interface Product {
   price: string;
   image: string;
   tag?: string;
+  keywords: string[];
 }
 
 export type InsightType = "Pain point" | "Praise" | "Suggestion";
