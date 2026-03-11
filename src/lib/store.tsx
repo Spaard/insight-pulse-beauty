@@ -413,7 +413,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTurnIndex(prev => prev + 1);
 
     setTimeout(() => {
-      const { reply, revealProducts } = getAIResponse(content, demoState, currentTurn);
+      const { reply, revealProducts } = getAIResponse(content, demoState, currentTurn, revealedProductIds);
       const aiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         role: "ai",
