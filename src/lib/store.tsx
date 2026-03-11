@@ -6,7 +6,7 @@ export interface ChatMessage {
   role: "ai" | "user";
   content: string;
   timestamp: Date;
-  revealProducts?: string[]; // product IDs to reveal after this message
+  revealProducts?: string[];
 }
 
 export interface Product {
@@ -18,15 +18,25 @@ export interface Product {
   tag?: string;
 }
 
-export interface Insight {
+export type InsightType = "Pain point" | "Praise" | "Suggestion";
+
+export interface InsightMessage {
   id: string;
-  type: "Pain point" | "Praise" | "Suggestion";
-  tag: string;
-  stage: string;
-  segment: string;
   quote: string;
+  segment: string;
+  stage: string;
   timestamp: Date;
-  suggestedAction?: string;
+}
+
+export interface InsightCategory {
+  id: string;
+  type: InsightType;
+  tag: string;
+  messages: InsightMessage[];
+  suggestedAction: string;
+  severity: "low" | "medium" | "high" | "critical";
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type DemoState = "new" | "returning" | "abandoned";
@@ -64,222 +74,204 @@ const GREETINGS: Record<DemoState, ChatMessage> = {
   },
 };
 
-// Conversational AI responses per state — progressive product reveals
-function getAIResponse(message: string, demoState: DemoState, turnIndex: number): { reply: string; insight?: Omit<Insight, "id" | "timestamp">; revealProducts?: string[] } {
+// AI classification: maps keywords to existing categories or creates new ones
+interface ClassificationResult {
+  type: InsightType;
+  tag: string;
+  stage: string;
+  segment: string;
+  suggestedAction: string;
+  severity: "low" | "medium" | "high" | "critical";
+}
+
+function classifyFeedback(message: string, demoState: DemoState): ClassificationResult | null {
+  const lower = message.toLowerCase();
+
+  const segment = demoState === "new" ? "New User" : demoState === "returning" ? "Returning User" : "Browse Abandoner";
+  const stage = demoState === "new" ? "Discovery" : demoState === "returning" ? "Post-purchase" : "Pre-purchase";
+
+  // Pain points
+  if (lower.match(/shipping|delivery|slow|livraison|délai|week|semaine|long/)) {
+    return { type: "Pain point", tag: "Delivery/Shipping", stage, segment, severity: "high", suggestedAction: "Activate express shipping promo for affected zip codes. Send 15% apology discount to users who experienced delays >7 days. Escalate to logistics partner for SLA review." };
+  }
+  if (lower.match(/damaged|broken|abîmé|cassé|packaging|crushed|cracked|écrasé/)) {
+    return { type: "Pain point", tag: "Product Condition", stage, segment, severity: "critical", suggestedAction: "Immediately send replacement with express shipping. Audit warehouse packaging standards for fragile items. Implement double-box packaging for products >$50." };
+  }
+  if (lower.match(/price|expensive|cher|budget|prix|coût|cost|afford/)) {
+    return { type: "Pain point", tag: "Pricing", stage, segment, severity: "medium", suggestedAction: "Launch 'First Purchase' 10% discount campaign for browse abandoners. Consider sample-size pricing tier. A/B test installment payment option (Klarna/Afterpay)." };
+  }
+  if (lower.match(/site|mobile|app|bug|crash|lent|slow.*load|ux|interface|navigate|trouver|find/)) {
+    return { type: "Pain point", tag: "Website UX", stage, segment, severity: "medium", suggestedAction: "Run mobile UX audit. A/B test floating shade picker and simplified navigation. Prioritize page load optimization for product pages." };
+  }
+  if (lower.match(/return|refund|remboursement|retour|exchange|échange/)) {
+    return { type: "Pain point", tag: "Returns & Refunds", stage, segment, severity: "high", suggestedAction: "Simplify return flow to 2 clicks. Add prepaid return labels in all orders. Consider extending return window from 30 to 60 days." };
+  }
+
+  // Praise
+  if (lower.match(/great|love|amazing|good|super|bien|adore|excellent|perfect|parfait|incredible|fantastic|best/)) {
+    return { type: "Praise", tag: "Product Satisfaction", stage, segment, severity: "low", suggestedAction: "Invite user to leave a review. Feature quote in social proof carousel. Consider loyalty program enrollment offer." };
+  }
+  if (lower.match(/helpful|service|support|concierge|recommend|personalized|personnalisé/)) {
+    return { type: "Praise", tag: "Customer Service", stage, segment, severity: "low", suggestedAction: "Share positive feedback with CS team. Use as training example. Consider case study for AI concierge marketing." };
+  }
+
+  // Suggestions
+  if (lower.match(/wish|want|would be|should|could|suggest|feature|try-on|virtual|essayer|fonctionnalité/)) {
+    return { type: "Suggestion", tag: "Feature Request", stage, segment, severity: "medium", suggestedAction: "Add to product backlog. Validate with user research survey (target N=200). Estimate ROI and prioritize in next sprint planning." };
+  }
+  if (lower.match(/shade|color|couleur|teinte|match|skin.*tone/)) {
+    return { type: "Suggestion", tag: "Shade Matching", stage, segment, severity: "medium", suggestedAction: "Prioritize AR shade-matching tool development. Partner with ModiFace/Perfect Corp for quick MVP. Expected to reduce shade-related returns by 30%." };
+  }
+
+  // Generic classification for unmatched messages with enough substance
+  if (message.length > 15) {
+    return { type: "Suggestion", tag: "General Feedback", stage, segment, severity: "low", suggestedAction: "Review and categorize manually. Flag for product team weekly digest." };
+  }
+
+  return null;
+}
+
+// Conversational AI responses per state
+function getAIResponse(message: string, demoState: DemoState, turnIndex: number): { reply: string; revealProducts?: string[] } {
   const lower = message.toLowerCase();
 
   if (demoState === "new") {
     if (lower.includes("skincare") || lower.includes("skin")) {
-      return {
-        reply: "Great choice! Skincare is all about finding what works for your unique skin. I'd recommend starting with this — it's one of our most-loved serums right now. What does your current routine look like?",
-        revealProducts: ["7"],
-        insight: { type: "Suggestion", tag: "Product Interest", stage: "Discovery", segment: "New User", quote: message },
-      };
+      return { reply: "Great choice! Skincare is all about finding what works for your unique skin. I'd recommend starting with this — it's one of our most-loved serums right now. What does your current routine look like?", revealProducts: ["7"] };
     }
     if (lower.includes("makeup") || lower.includes("foundation") || lower.includes("lipstick")) {
-      return {
-        reply: "Love it! Let me start with something universally flattering — this Fenty Gloss is a fan favorite. What's the occasion? Everyday look, night out, or special event?",
-        revealProducts: ["1"],
-        insight: { type: "Suggestion", tag: "Product Interest", stage: "Discovery", segment: "New User", quote: message },
-      };
+      return { reply: "Love it! Let me start with something universally flattering — this Fenty Gloss is a fan favorite. What's the occasion? Everyday look, night out, or special event?", revealProducts: ["1"] };
     }
     if (lower.includes("fragrance") || lower.includes("perfume") || lower.includes("parfum")) {
-      return {
-        reply: "Fragrance is so personal — I love helping with that. Here's a timeless option to start. Do you tend to prefer fresh & light, or warm & intense scents?",
-        revealProducts: ["2"],
-        insight: { type: "Suggestion", tag: "Product Interest", stage: "Discovery", segment: "New User", quote: message },
-      };
+      return { reply: "Fragrance is so personal — I love helping with that. Here's a timeless option to start. Do you tend to prefer fresh & light, or warm & intense scents?", revealProducts: ["2"] };
     }
-    // Follow-up turns — reveal more products
     if (turnIndex >= 2) {
-      return {
-        reply: "Based on what you've shared, I think you'd also love this. Shall I add a sample to your cart so you can try it risk-free?",
-        revealProducts: ["4"],
-        insight: { type: "Suggestion", tag: "General Feedback", stage: "Discovery", segment: "New User", quote: message },
-      };
+      return { reply: "Based on what you've shared, I think you'd also love this. Shall I add a sample to your cart so you can try it risk-free?", revealProducts: ["4"] };
     }
-    return {
-      reply: "I'd love to help! Are you leaning towards skincare, makeup, or fragrance? Or I can suggest something based on what's trending right now 🔥",
-    };
+    return { reply: "I'd love to help! Are you leaning towards skincare, makeup, or fragrance? Or I can suggest something based on what's trending right now 🔥" };
   }
 
   if (demoState === "returning") {
-    if (lower.includes("shipping") || lower.includes("delivery") || lower.includes("slow") || lower.includes("week") || lower.includes("livraison")) {
-      return {
-        reply: "I'm really sorry to hear that, Sarah. Two weeks is way too long — you deserve better. I've flagged this with our logistics team and I'd like to offer you complimentary express shipping on your next order. In the meantime, I think your skin would love this eye cream as a complement to your serum 💫",
-        revealProducts: ["5"],
-        insight: {
-          type: "Pain point",
-          tag: "Delivery/Shipping",
-          stage: "Post-purchase",
-          segment: "Returning User",
-          quote: message,
-          suggestedAction: "Alert: 15 mentions of slow shipping today. Recommend sending a 15% apology discount code to affected users.",
-        },
-      };
+    if (lower.match(/shipping|delivery|slow|week|livraison/)) {
+      return { reply: "I'm really sorry to hear that, Sarah. Two weeks is way too long — you deserve better. I've flagged this with our logistics team and I'd like to offer you complimentary express shipping on your next order. In the meantime, I think your skin would love this eye cream as a complement to your serum 💫", revealProducts: ["5"] };
     }
-    if (lower.includes("great") || lower.includes("love") || lower.includes("amazing") || lower.includes("good") || lower.includes("super") || lower.includes("bien") || lower.includes("adore")) {
-      return {
-        reply: "That's wonderful to hear! 🎉 Since your skin is responding so well, I think you'd absolutely adore this — it uses the same microbiome science for the delicate eye area. Want me to add a sample to your next order?",
-        revealProducts: ["5"],
-        insight: {
-          type: "Praise",
-          tag: "Product Satisfaction",
-          stage: "Post-purchase",
-          segment: "Returning User",
-          quote: message,
-        },
-      };
+    if (lower.match(/great|love|amazing|good|super|bien|adore/)) {
+      return { reply: "That's wonderful to hear! 🎉 Since your skin is responding so well, I think you'd absolutely adore this — it uses the same microbiome science for the delicate eye area. Want me to add a sample to your next order?", revealProducts: ["5"] };
     }
-    if (lower.includes("damaged") || lower.includes("broken") || lower.includes("abîmé") || lower.includes("cassé") || lower.includes("packaging")) {
-      return {
-        reply: "Oh no, I'm so sorry about that! Product arriving damaged is unacceptable. I'm immediately processing a free replacement for you. We'll also flag this with our warehouse team. In the meantime, here's something I think you'll enjoy 💛",
-        revealProducts: ["6"],
-        insight: {
-          type: "Pain point",
-          tag: "Product Condition",
-          stage: "Post-purchase",
-          segment: "Returning User",
-          quote: message,
-          suggestedAction: "Alert: Packaging damage reports increasing. Recommend audit of fulfillment packaging process.",
-        },
-      };
+    if (lower.match(/damaged|broken|abîmé|cassé|packaging/)) {
+      return { reply: "Oh no, I'm so sorry about that! Product arriving damaged is unacceptable. I'm immediately processing a free replacement for you. We'll also flag this with our warehouse team. In the meantime, here's something I think you'll enjoy 💛", revealProducts: ["6"] };
     }
-    return {
-      reply: "Thank you for sharing, Sarah! Your feedback is incredibly valuable. Based on what you've told me, I have a recommendation that I think you'll love — shall I show you?",
-      revealProducts: turnIndex >= 2 ? ["6"] : undefined,
-      insight: {
-        type: "Suggestion",
-        tag: "General Feedback",
-        stage: "Post-purchase",
-        segment: "Returning User",
-        quote: message,
-      },
-    };
+    return { reply: "Thank you for sharing, Sarah! Your feedback is incredibly valuable. Based on what you've told me, I have a recommendation that I think you'll love — shall I show you?", revealProducts: turnIndex >= 2 ? ["6"] : undefined };
   }
 
   // abandoned
-  if (lower.includes("price") || lower.includes("expensive") || lower.includes("cher") || lower.includes("budget") || lower.includes("prix")) {
-    return {
-      reply: "Totally understandable! $155 is a commitment. Here's a beautiful alternative at a more comfortable price point — and I can also check if we have any promotions coming up for the J'adore. Would that help?",
-      revealProducts: ["3"],
-      insight: {
-        type: "Pain point",
-        tag: "Pricing",
-        stage: "Pre-purchase",
-        segment: "Browse Abandoner",
-        quote: message,
-        suggestedAction: "Alert: 23 browse abandonments citing price on premium fragrances. Consider a 'First Purchase' 10% discount campaign.",
-      },
-    };
+  if (lower.match(/price|expensive|cher|budget|prix/)) {
+    return { reply: "Totally understandable! $155 is a commitment. Here's a beautiful alternative at a more comfortable price point — and I can also check if we have any promotions coming up for the J'adore. Would that help?", revealProducts: ["3"] };
   }
-  if (lower.includes("yes") || lower.includes("oui") || lower.includes("sure") || lower.includes("ok") || lower.includes("same") || lower.includes("continue") || lower.includes("reprendre")) {
-    return {
-      reply: "Perfect! Here's the J'adore again — still as gorgeous as ever. If you'd like, I can also show you a few similar options so you can compare. What matters most to you: longevity, scent profile, or price?",
-      revealProducts: ["2"],
-      insight: {
-        type: "Praise",
-        tag: "Product Interest",
-        stage: "Pre-purchase",
-        segment: "Browse Abandoner",
-        quote: message,
-      },
-    };
+  if (lower.match(/yes|oui|sure|ok|same|continue|reprendre/)) {
+    return { reply: "Perfect! Here's the J'adore again — still as gorgeous as ever. If you'd like, I can also show you a few similar options so you can compare. What matters most to you: longevity, scent profile, or price?", revealProducts: ["2"] };
   }
-  if (lower.includes("different") || lower.includes("else") || lower.includes("autre") || lower.includes("other")) {
-    return {
-      reply: "No problem at all! Let's explore something fresh. Here's one of our most intriguing options right now. What draws you to a fragrance — the scent itself, the bottle design, or the brand story?",
-      revealProducts: ["3"],
-      insight: {
-        type: "Suggestion",
-        tag: "Product Exploration",
-        stage: "Pre-purchase",
-        segment: "Browse Abandoner",
-        quote: message,
-      },
-    };
+  if (lower.match(/different|else|autre|other/)) {
+    return { reply: "No problem at all! Let's explore something fresh. Here's one of our most intriguing options right now. What draws you to a fragrance — the scent itself, the bottle design, or the brand story?", revealProducts: ["3"] };
   }
-  return {
-    reply: "No worries at all! Everyone shops at their own pace. Would you like to revisit the J'adore, or shall we explore something completely different today?",
-    insight: {
-      type: "Suggestion",
-      tag: "General Feedback",
-      stage: "Pre-purchase",
-      segment: "Browse Abandoner",
-      quote: message,
-    },
-  };
+  return { reply: "No worries at all! Everyone shops at their own pace. Would you like to revisit the J'adore, or shall we explore something completely different today?" };
 }
 
-// Pre-populated mock insights for demo
-const MOCK_INSIGHTS: Insight[] = [
+// Pre-populated mock insight categories for demo
+const MOCK_CATEGORIES: InsightCategory[] = [
   {
-    id: "mock-1",
+    id: "cat-1",
     type: "Pain point",
     tag: "Delivery/Shipping",
-    stage: "Post-purchase",
-    segment: "Returning User",
-    quote: "My order took almost 3 weeks to arrive, that's really too long for the price I paid.",
-    timestamp: new Date(Date.now() - 3600000 * 2),
-    suggestedAction: "Alert: 47 mentions of slow shipping this week. Recommend activating express shipping promo for affected zip codes.",
+    severity: "high",
+    suggestedAction: "Activate express shipping promo for affected zip codes. Send 15% apology discount to users who experienced delays >7 days. Escalate to logistics partner for SLA review.",
+    createdAt: new Date(Date.now() - 3600000 * 24),
+    updatedAt: new Date(Date.now() - 3600000 * 2),
+    messages: [
+      { id: "m1", quote: "My order took almost 3 weeks to arrive, that's really too long for the price I paid.", segment: "Returning User", stage: "Post-purchase", timestamp: new Date(Date.now() - 3600000 * 2) },
+      { id: "m2", quote: "Delivery was supposed to take 5 days but it took 12. Very disappointed.", segment: "Returning User", stage: "Post-purchase", timestamp: new Date(Date.now() - 3600000 * 8) },
+      { id: "m3", quote: "I paid for express shipping and it still came late.", segment: "Returning User", stage: "Post-purchase", timestamp: new Date(Date.now() - 3600000 * 15) },
+    ],
   },
   {
-    id: "mock-2",
+    id: "cat-2",
     type: "Pain point",
     tag: "Pricing",
-    stage: "Pre-purchase",
-    segment: "Browse Abandoner",
-    quote: "I love the Dior perfume but $155 is just too much without being able to test it first.",
-    timestamp: new Date(Date.now() - 3600000 * 4),
-    suggestedAction: "Recommendation: Launch a 'Try Before You Buy' sample program for fragrances over $100.",
+    severity: "medium",
+    suggestedAction: "Launch 'First Purchase' 10% discount campaign for browse abandoners. Consider sample-size pricing tier. A/B test installment payment option (Klarna/Afterpay).",
+    createdAt: new Date(Date.now() - 3600000 * 48),
+    updatedAt: new Date(Date.now() - 3600000 * 4),
+    messages: [
+      { id: "m4", quote: "I love the Dior perfume but $155 is just too much without being able to test it first.", segment: "Browse Abandoner", stage: "Pre-purchase", timestamp: new Date(Date.now() - 3600000 * 4) },
+      { id: "m5", quote: "Too expensive for what it is. I found similar quality for half the price elsewhere.", segment: "Browse Abandoner", stage: "Pre-purchase", timestamp: new Date(Date.now() - 3600000 * 20) },
+    ],
   },
   {
-    id: "mock-3",
+    id: "cat-3",
     type: "Praise",
     tag: "Product Satisfaction",
-    stage: "Post-purchase",
-    segment: "Returning User",
-    quote: "The Génifique serum is incredible, my skin has never looked this good!",
-    timestamp: new Date(Date.now() - 3600000 * 5),
+    severity: "low",
+    suggestedAction: "Invite users to leave reviews. Feature top quotes in social proof carousel. Offer loyalty program enrollment.",
+    createdAt: new Date(Date.now() - 3600000 * 72),
+    updatedAt: new Date(Date.now() - 3600000 * 5),
+    messages: [
+      { id: "m6", quote: "The Génifique serum is incredible, my skin has never looked this good!", segment: "Returning User", stage: "Post-purchase", timestamp: new Date(Date.now() - 3600000 * 5) },
+      { id: "m7", quote: "Absolutely love the texture and results. Will definitely repurchase.", segment: "Returning User", stage: "Post-purchase", timestamp: new Date(Date.now() - 3600000 * 18) },
+      { id: "m8", quote: "Best serum I've ever used. My friends all want to know my secret!", segment: "Returning User", stage: "Post-purchase", timestamp: new Date(Date.now() - 3600000 * 30) },
+      { id: "m9", quote: "The glow is real. Worth every penny.", segment: "Returning User", stage: "Post-purchase", timestamp: new Date(Date.now() - 3600000 * 42) },
+    ],
   },
   {
-    id: "mock-4",
+    id: "cat-4",
     type: "Pain point",
     tag: "Product Condition",
-    stage: "Post-purchase",
-    segment: "Returning User",
-    quote: "The box was crushed when it arrived and the perfume cap was cracked.",
-    timestamp: new Date(Date.now() - 3600000 * 6),
-    suggestedAction: "Alert: 12 packaging damage reports this month. Recommend upgrading fragile item packaging standards.",
+    severity: "critical",
+    suggestedAction: "Immediately send replacements with express shipping. Audit warehouse packaging standards for fragile items. Implement double-box packaging for products >$50.",
+    createdAt: new Date(Date.now() - 3600000 * 36),
+    updatedAt: new Date(Date.now() - 3600000 * 6),
+    messages: [
+      { id: "m10", quote: "The box was crushed when it arrived and the perfume cap was cracked.", segment: "Returning User", stage: "Post-purchase", timestamp: new Date(Date.now() - 3600000 * 6) },
+      { id: "m11", quote: "Product leaked inside the packaging. Complete mess.", segment: "Returning User", stage: "Post-purchase", timestamp: new Date(Date.now() - 3600000 * 24) },
+    ],
   },
   {
-    id: "mock-5",
+    id: "cat-5",
     type: "Suggestion",
     tag: "Feature Request",
-    stage: "Pre-purchase",
-    segment: "New User",
-    quote: "It would be great to have a virtual try-on for lipstick shades before buying.",
-    timestamp: new Date(Date.now() - 3600000 * 8),
-    suggestedAction: "Opportunity: AR try-on feature could reduce return rate by ~25%. Prioritize for next sprint.",
+    severity: "medium",
+    suggestedAction: "Add to product backlog. Validate with user research survey (target N=200). Estimate ROI — AR try-on expected to reduce return rate by ~25%. Prioritize in next sprint planning.",
+    createdAt: new Date(Date.now() - 3600000 * 96),
+    updatedAt: new Date(Date.now() - 3600000 * 8),
+    messages: [
+      { id: "m12", quote: "It would be great to have a virtual try-on for lipstick shades before buying.", segment: "New User", stage: "Pre-purchase", timestamp: new Date(Date.now() - 3600000 * 8) },
+      { id: "m13", quote: "I wish I could see how a foundation shade looks on my skin tone before ordering.", segment: "New User", stage: "Discovery", timestamp: new Date(Date.now() - 3600000 * 36) },
+    ],
   },
   {
-    id: "mock-6",
+    id: "cat-6",
     type: "Praise",
     tag: "Customer Service",
-    stage: "Post-purchase",
-    segment: "Returning User",
-    quote: "The AI concierge recommended the perfect eye cream for me — felt super personalized!",
-    timestamp: new Date(Date.now() - 3600000 * 10),
+    severity: "low",
+    suggestedAction: "Share positive feedback with CS team. Use as training example for AI concierge optimization. Consider case study for marketing.",
+    createdAt: new Date(Date.now() - 3600000 * 48),
+    updatedAt: new Date(Date.now() - 3600000 * 10),
+    messages: [
+      { id: "m14", quote: "The AI concierge recommended the perfect eye cream for me — felt super personalized!", segment: "Returning User", stage: "Post-purchase", timestamp: new Date(Date.now() - 3600000 * 10) },
+      { id: "m15", quote: "This is the best shopping assistant I've ever used. So intuitive!", segment: "New User", stage: "Discovery", timestamp: new Date(Date.now() - 3600000 * 28) },
+    ],
   },
   {
-    id: "mock-7",
+    id: "cat-7",
     type: "Pain point",
     tag: "Website UX",
-    stage: "Pre-purchase",
-    segment: "Browse Abandoner",
-    quote: "I couldn't find the shade selector easily on mobile, so I just gave up.",
-    timestamp: new Date(Date.now() - 3600000 * 12),
-    suggestedAction: "UX Alert: Mobile shade selector visibility is a top-3 pain point. Recommend A/B testing a floating shade picker.",
+    severity: "medium",
+    suggestedAction: "Run mobile UX audit. A/B test floating shade picker and simplified navigation. Prioritize page load optimization on product pages.",
+    createdAt: new Date(Date.now() - 3600000 * 60),
+    updatedAt: new Date(Date.now() - 3600000 * 12),
+    messages: [
+      { id: "m16", quote: "I couldn't find the shade selector easily on mobile, so I just gave up.", segment: "Browse Abandoner", stage: "Pre-purchase", timestamp: new Date(Date.now() - 3600000 * 12) },
+      { id: "m17", quote: "The checkout flow has too many steps. I abandoned my cart twice.", segment: "Browse Abandoner", stage: "Pre-purchase", timestamp: new Date(Date.now() - 3600000 * 40) },
+    ],
   },
 ];
 
@@ -316,7 +308,7 @@ interface AppState {
   sendMessage: (content: string) => void;
   products: Product[];
   revealedProductIds: string[];
-  insights: Insight[];
+  categories: InsightCategory[];
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -324,7 +316,7 @@ const AppContext = createContext<AppState | null>(null);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [demoState, setDemoStateRaw] = useState<DemoState>("returning");
   const [messages, setMessages] = useState<ChatMessage[]>([GREETINGS.returning]);
-  const [insights, setInsights] = useState<Insight[]>(MOCK_INSIGHTS);
+  const [categories, setCategories] = useState<InsightCategory[]>(MOCK_CATEGORIES);
   const [revealedProductIds, setRevealedProductIds] = useState<string[]>([]);
   const [turnIndex, setTurnIndex] = useState(0);
 
@@ -333,7 +325,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setMessages([GREETINGS[s]]);
     setRevealedProductIds([]);
     setTurnIndex(0);
-    // Keep mock insights, only clear live ones would be separate
   }, []);
 
   const products = ALL_PRODUCTS;
@@ -350,7 +341,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTurnIndex(prev => prev + 1);
 
     setTimeout(() => {
-      const { reply, insight, revealProducts } = getAIResponse(content, demoState, currentTurn);
+      const { reply, revealProducts } = getAIResponse(content, demoState, currentTurn);
       const aiMsg: ChatMessage = {
         id: `ai-${Date.now()}`,
         role: "ai",
@@ -364,20 +355,52 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setRevealedProductIds(prev => [...new Set([...prev, ...revealProducts])]);
       }
 
-      if (insight) {
-        const newInsight: Insight = {
-          ...insight,
-          id: `insight-${Date.now()}`,
+      // Classify and group into categories
+      const classification = classifyFeedback(content, demoState);
+      if (classification) {
+        const newMessage: InsightMessage = {
+          id: `msg-${Date.now()}`,
           quote: content,
+          segment: classification.segment,
+          stage: classification.stage,
           timestamp: new Date(),
         };
-        setInsights(prev => [newInsight, ...prev]);
+
+        setCategories(prev => {
+          const existingIndex = prev.findIndex(c => c.tag === classification.tag && c.type === classification.type);
+          if (existingIndex >= 0) {
+            // Add message to existing category
+            const updated = [...prev];
+            updated[existingIndex] = {
+              ...updated[existingIndex],
+              messages: [newMessage, ...updated[existingIndex].messages],
+              updatedAt: new Date(),
+              severity: classification.severity === "critical" ? "critical" : updated[existingIndex].severity,
+            };
+            // Move to top
+            const [item] = updated.splice(existingIndex, 1);
+            return [item, ...updated];
+          } else {
+            // Create new category
+            const newCat: InsightCategory = {
+              id: `cat-${Date.now()}`,
+              type: classification.type,
+              tag: classification.tag,
+              messages: [newMessage],
+              suggestedAction: classification.suggestedAction,
+              severity: classification.severity,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
+            return [newCat, ...prev];
+          }
+        });
       }
     }, 1200);
   }, [demoState, turnIndex]);
 
   return (
-    <AppContext.Provider value={{ demoState, setDemoState, messages, sendMessage, products, revealedProductIds, insights }}>
+    <AppContext.Provider value={{ demoState, setDemoState, messages, sendMessage, products, revealedProductIds, categories }}>
       {children}
     </AppContext.Provider>
   );
