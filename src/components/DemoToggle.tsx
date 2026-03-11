@@ -1,5 +1,11 @@
 import { useAppState, type DemoState } from "@/lib/store";
 
+const DEMO_LABELS: Record<DemoState, string> = {
+  new: "New User",
+  returning: "Sarah (Returning)",
+  abandoned: "Alex (Abandoned)",
+};
+
 export function DemoToggle() {
   const { demoState, setDemoState } = useAppState();
 
@@ -7,7 +13,7 @@ export function DemoToggle() {
     <div className="absolute bottom-20 left-6 z-10">
       <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary border border-border text-xs">
         <span className="text-muted-foreground font-medium">Demo:</span>
-        {(["new", "returning"] as DemoState[]).map((s) => (
+        {(["new", "returning", "abandoned"] as DemoState[]).map((s) => (
           <button
             key={s}
             onClick={() => setDemoState(s)}
@@ -17,7 +23,7 @@ export function DemoToggle() {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            {s === "new" ? "New User" : "Sarah (Returning)"}
+            {DEMO_LABELS[s]}
           </button>
         ))}
       </div>
