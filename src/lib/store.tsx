@@ -140,8 +140,41 @@ function classifyFeedback(message: string, demoState: DemoState): Classification
   return null;
 }
 
+// Smart product matching: find the best product for a user query
+function findMatchingProducts(query: string, alreadyRevealed: string[], count: number = 1): string[] {
+  const lower = query.toLowerCase();
+  const words = lower.split(/\s+/);
+  
+  // Score each product by keyword match relevance
+  const scored = ALL_PRODUCTS
+    .filter(p => !alreadyRevealed.includes(p.id))
+    .map(p => {
+      let score = 0;
+      for (const kw of p.keywords) {
+        // Exact word match in query
+        if (words.includes(kw)) score += 10;
+        // Partial match (query contains keyword)
+        else if (lower.includes(kw)) score += 7;
+        // Keyword contains a query word (e.g. "liner" matches "lip liner")
+        else if (words.some(w => w.length > 2 && kw.includes(w))) score += 5;
+      }
+      // Also match product name
+      const nameLower = p.name.toLowerCase();
+      for (const w of words) {
+        if (w.length > 2 && nameLower.includes(w)) score += 6;
+      }
+      // Match brand
+      if (lower.includes(p.brand.toLowerCase())) score += 8;
+      return { product: p, score };
+    })
+    .filter(s => s.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  return scored.slice(0, count).map(s => s.product.id);
+}
+
 // Conversational AI responses per state
-function getAIResponse(message: string, demoState: DemoState, turnIndex: number): { reply: string; revealProducts?: string[] } {
+function getAIResponse(message: string, demoState: DemoState, turnIndex: number, revealedProductIds: string[]): { reply: string; revealProducts?: string[] } {
   const lower = message.toLowerCase();
 
   if (demoState === "new") {
