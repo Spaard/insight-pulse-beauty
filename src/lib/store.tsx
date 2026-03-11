@@ -137,44 +137,74 @@ function getAIResponse(message: string, demoState: DemoState, turnIndex: number)
 
   if (demoState === "new") {
     if (lower.includes("skincare") || lower.includes("skin")) {
-      return { reply: "Great choice! Skincare is all about finding what works for your unique skin. I'd recommend starting with this — it's one of our most-loved serums right now. What does your current routine look like?", revealProducts: ["7"] };
+      return { reply: "Great choice! Skincare is all about finding what works for your unique skin. I'd recommend starting with this — it's one of our most-loved serums right now.\n\nQuick question before we go further: **how important is ingredient transparency to you when choosing skincare?** (Very important / Somewhat / I just want results)", revealProducts: ["7"] };
     }
     if (lower.includes("makeup") || lower.includes("foundation") || lower.includes("lipstick")) {
-      return { reply: "Love it! Let me start with something universally flattering — this Fenty Gloss is a fan favorite. What's the occasion? Everyday look, night out, or special event?", revealProducts: ["1"] };
+      return { reply: "Love it! Let me start with something universally flattering — this Fenty Gloss is a fan favorite.\n\n**What's the occasion?** Everyday look, night out, or special event? And out of curiosity — **do you usually shop for beauty online or in-store?**", revealProducts: ["1"] };
     }
     if (lower.includes("fragrance") || lower.includes("perfume") || lower.includes("parfum")) {
-      return { reply: "Fragrance is so personal — I love helping with that. Here's a timeless option to start. Do you tend to prefer fresh & light, or warm & intense scents?", revealProducts: ["2"] };
+      return { reply: "Fragrance is so personal — I love helping with that. Here's a timeless option to start.\n\nDo you tend to prefer fresh & light, or warm & intense scents? Also — **would you be interested in a sample/discovery set before committing to a full bottle?**", revealProducts: ["2"] };
+    }
+    if (lower.match(/important|très|very|results|résultat|just want/)) {
+      return { reply: "Got it, that's super helpful! Here's another option that's all about visible results — clinical-grade but still luxurious.\n\n**One more thing: does delivery speed matter a lot to you, or are you okay waiting a few extra days if it means free shipping?**", revealProducts: ["6"] };
+    }
+    if (lower.match(/online|en ligne|internet/)) {
+      return { reply: "Interesting! Since you shop online, **what would make you more confident buying beauty products without testing them first?** Virtual try-on, detailed swatches, reviews, or generous return policies? Here's another pick for you 💄", revealProducts: ["4"] };
+    }
+    if (lower.match(/store|magasin|boutique|in-store/)) {
+      return { reply: "Makes sense — nothing beats trying in person! **What would convince you to buy more online?** Better product videos, AR try-on, or maybe free samples with every order? In the meantime, check this out:", revealProducts: ["4"] };
+    }
+    if (lower.match(/sample|échantillon|discovery|découverte/)) {
+      return { reply: "Love that idea! We're actually exploring discovery sets. **How much would you be willing to pay for a curated sample box of 5 products?** Under $20, $20-40, or $40+? Here's something else you might like:", revealProducts: ["8"] };
     }
     if (turnIndex >= 2) {
-      return { reply: "Based on what you've shared, I think you'd also love this. Shall I add a sample to your cart so you can try it risk-free?", revealProducts: ["4"] };
+      return { reply: "Based on what you've shared, I think you'd also love this. **Last question — would you like to receive personalized product recommendations by email, or do you prefer to discover on your own?**", revealProducts: ["4"] };
     }
     return { reply: "I'd love to help! Are you leaning towards skincare, makeup, or fragrance? Or I can suggest something based on what's trending right now 🔥" };
   }
 
   if (demoState === "returning") {
-    if (lower.match(/shipping|delivery|slow|week|livraison/)) {
-      return { reply: "I'm really sorry to hear that, Sarah. Two weeks is way too long — you deserve better. I've flagged this with our logistics team and I'd like to offer you complimentary express shipping on your next order. In the meantime, I think your skin would love this eye cream as a complement to your serum 💫", revealProducts: ["5"] };
+    if (lower.match(/shipping|delivery|slow|week|livraison|délai|long/)) {
+      return { reply: "I'm really sorry to hear that, Sarah. Two weeks is way too long — you deserve better. I've flagged this with our logistics team.\n\n**Quick question: would you pay a small premium ($5-8) for guaranteed 2-day delivery, or is free shipping more important even if it takes longer?**\n\nIn the meantime, I think your skin would love this eye cream as a complement to your serum 💫", revealProducts: ["5"] };
     }
     if (lower.match(/great|love|amazing|good|super|bien|adore/)) {
-      return { reply: "That's wonderful to hear! 🎉 Since your skin is responding so well, I think you'd absolutely adore this — it uses the same microbiome science for the delicate eye area. Want me to add a sample to your next order?", revealProducts: ["5"] };
+      return { reply: "That's wonderful to hear! 🎉 Since your skin is responding so well, I think you'd absolutely adore this — it uses the same microbiome science for the delicate eye area.\n\n**Would you be interested in a subscription/auto-replenish option so you never run out of your favorites?** We're thinking about offering 10% off for subscribers.", revealProducts: ["5"] };
     }
-    if (lower.match(/damaged|broken|abîmé|cassé|packaging/)) {
-      return { reply: "Oh no, I'm so sorry about that! Product arriving damaged is unacceptable. I'm immediately processing a free replacement for you. We'll also flag this with our warehouse team. In the meantime, here's something I think you'll enjoy 💛", revealProducts: ["6"] };
+    if (lower.match(/damaged|broken|abîmé|cassé|packaging|crushed|cracked/)) {
+      return { reply: "Oh no, I'm so sorry about that! Product arriving damaged is unacceptable. I'm immediately processing a free replacement for you.\n\n**How important is eco-friendly packaging to you vs. maximum protection?** We're exploring sustainable options but want to make sure products arrive safely. Your input really helps! 💛", revealProducts: ["6"] };
     }
-    return { reply: "Thank you for sharing, Sarah! Your feedback is incredibly valuable. Based on what you've told me, I have a recommendation that I think you'll love — shall I show you?", revealProducts: turnIndex >= 2 ? ["6"] : undefined };
+    if (lower.match(/subscription|abonnement|auto|yes|oui|sure|ok/)) {
+      return { reply: "Great feedback! We'll definitely factor that in. **One more thing — when you repurchase, do you like to stick with what works, or do you enjoy discovering new products each time?**\n\nHere's something new that pairs beautifully with your serum:", revealProducts: ["8"] };
+    }
+    if (lower.match(/pay|premium|fast|rapide|2.day|express/)) {
+      return { reply: "That's really useful to know! **Would you also value real-time delivery tracking with updates, or is just knowing the estimated date enough?**\n\nBy the way, here's a product I think would complement your routine perfectly:", revealProducts: ["6"] };
+    }
+    if (lower.match(/eco|green|sustainable|durable|environnement|planet/)) {
+      return { reply: "Love that you care about sustainability! 🌱 **Would you choose a brand specifically because of eco-friendly packaging, even if it costs slightly more?**\n\nHere's a brand that's doing great things on that front:", revealProducts: ["7"] };
+    }
+    return { reply: "Thank you for sharing, Sarah! Your feedback is incredibly valuable.\n\n**Before I make a recommendation — on a scale of 1-5, how satisfied are you overall with your Luxora experience so far?** And is there anything we could do better?\n\nIn the meantime, shall I show you something new?", revealProducts: turnIndex >= 2 ? ["6"] : undefined };
   }
 
   // abandoned
-  if (lower.match(/price|expensive|cher|budget|prix/)) {
-    return { reply: "Totally understandable! $155 is a commitment. Here's a beautiful alternative at a more comfortable price point — and I can also check if we have any promotions coming up for the J'adore. Would that help?", revealProducts: ["3"] };
+  if (lower.match(/price|expensive|cher|budget|prix|coût|cost/)) {
+    return { reply: "Totally understandable! $155 is a commitment. Here's a beautiful alternative at a more comfortable price point.\n\n**Would any of these make you more comfortable purchasing:** installment payments (pay in 3x), a money-back guarantee, or a smaller size at a lower price?", revealProducts: ["3"] };
+  }
+  if (lower.match(/installment|3x|paiement|payment|pay later/)) {
+    return { reply: "Good to know! We're considering adding payment plans. **What's your ideal price range for a signature fragrance?** Under $80, $80-120, or you're flexible if you love it?\n\nHere's another option that might hit the sweet spot:", revealProducts: ["8"] };
+  }
+  if (lower.match(/not sure|hésit|hesitat|thinking|réfléch|compare|comparer/)) {
+    return { reply: "No rush at all! **What would help you decide faster: more detailed reviews from people like you, a side-by-side comparison tool, or the ability to get a sample first?**\n\nHere's an option worth comparing:", revealProducts: ["3"] };
   }
   if (lower.match(/yes|oui|sure|ok|same|continue|reprendre/)) {
-    return { reply: "Perfect! Here's the J'adore again — still as gorgeous as ever. If you'd like, I can also show you a few similar options so you can compare. What matters most to you: longevity, scent profile, or price?", revealProducts: ["2"] };
+    return { reply: "Perfect! Here's the J'adore again — still as gorgeous as ever. If you'd like, I can also show you a few similar options so you can compare.\n\n**What matters most to you in a fragrance: longevity (lasts all day), scent profile (notes & mood), or value for money?**", revealProducts: ["2"] };
   }
-  if (lower.match(/different|else|autre|other/)) {
-    return { reply: "No problem at all! Let's explore something fresh. Here's one of our most intriguing options right now. What draws you to a fragrance — the scent itself, the bottle design, or the brand story?", revealProducts: ["3"] };
+  if (lower.match(/different|else|autre|other|new|nouveau/)) {
+    return { reply: "No problem at all! Let's explore something fresh. Here's one of our most intriguing options right now.\n\n**What draws you to a fragrance — the scent itself, the bottle design, or the brand story?** This helps me find your perfect match 🎯", revealProducts: ["3"] };
   }
-  return { reply: "No worries at all! Everyone shops at their own pace. Would you like to revisit the J'adore, or shall we explore something completely different today?" };
+  if (lower.match(/longevity|longev|tenue|lasts|dure/)) {
+    return { reply: "A fragrance that lasts — you have great taste! **Do you prefer to apply once in the morning and forget about it, or do you enjoy refreshing throughout the day?**\n\nThis one has incredible staying power:", revealProducts: ["3"] };
+  }
+  return { reply: "No worries at all! Everyone shops at their own pace. **Before we continue — was there something specific that held you back last time?** Price, not sure about the scent, wanted to compare, or something else? Understanding this helps me find exactly what you need 😊" };
 }
 
 // Pre-populated mock insight categories for demo
